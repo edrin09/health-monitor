@@ -1,0 +1,100 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "健康监测",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/stats/index",
+      "style": {
+        "navigationBarTitleText": "健康统计",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mine/index",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/glucose/index",
+      "style": {
+        "navigationBarTitleText": "血糖监测"
+      }
+    },
+    {
+      "path": "pages/blood-pressure/index",
+      "style": {
+        "navigationBarTitleText": "血压记录"
+      }
+    },
+    {
+      "path": "pages/weight/index",
+      "style": {
+        "navigationBarTitleText": "体重记录"
+      }
+    },
+    {
+      "path": "pages/waist/index",
+      "style": {
+        "navigationBarTitleText": "腰围记录"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "健康档案"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/agreement/index",
+      "style": {
+        "navigationBarTitleText": "协议与政策"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "健康监测",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#00c853",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "/static/tabbar/home.png",
+        "selectedIconPath": "/static/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/stats/index",
+        "text": "统计",
+        "iconPath": "/static/tabbar/chart.png",
+        "selectedIconPath": "/static/tabbar/chart-active.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "/static/tabbar/user.png",
+        "selectedIconPath": "/static/tabbar/user-active.png"
+      }
+    ]
+  }
+}

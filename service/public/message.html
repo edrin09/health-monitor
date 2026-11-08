@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>在线留言</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #1aa094;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message.admin {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+
+        .message.admin .message-content {
+            background-color: #e5e5ea;
+            color: #333;
+        }
+
+        .message.user .message-content {
+            background-color: #dcf8c6;
+            color: #333;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .input-container {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: white;
+            display: flex;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .send-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background: #1aa094;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .send-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #1aa094;
+            color: white;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>在线留言</h2>
+        <p>与我们的客服团队实时沟通</p>
+    </div>
+
+    <div class="chat-container" id="chatContainer">
+        <!-- 消息将动态加载到这里 -->
+        <div class="message admin">
+            <div class="message-content">
+                您好！欢迎使用我们的在线留言服务，有什么可以帮助您的吗？
+                <div class="message-time">刚刚</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-container">
+        <textarea class="message-input" id="messageInput" placeholder="请输入您的问题或留言..."></textarea>
+        <button class="send-button" id="sendButton" onclick="sendMessage()">发送</button>
+    </div>
+</div>
+
+<div class="notification" id="notification">消息发送成功</div>
+
+<script>
+    let accessToken = localStorage.getItem('access_token') || '';
+
+    // 页面加载完成后获取历史消息
+    document.addEventListener('DOMContentLoaded', function () {
+        loadMessages();
+
+        // 监听回车键发送消息（Shift+Enter换行）
+        document.getElementById('messageInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    });
+
+    // 加载历史消息
+    async function loadMessages() {
+        try {
+            const response = await fetch('/api/business/message/getList', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.code === 200) {
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.innerHTML = ''; // 清空现有消息
+
+                result.data.list.forEach(msg => {
+                    const isAdmin = msg.sender_type === 'admin';
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${isAdmin ? 'admin' : 'user'}`;
+
+                    messageDiv.innerHTML = `
+                            <div class="message-content">
+                                ${msg.message_content}
+                                <div class="message-time">${msg.create_time}</div>
+                            </div>
+                        `;
+
+                    chatContainer.appendChild(messageDiv);
+                });
+
+                // 滚动到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } else {
+                showNotification(result.msg || '加载消息失败', 'error');
+            }
+        } catch (error) {
+            console.error('加载消息失败:', error);
+            showNotification('网络错误，请稍后重试', 'error');
+        }
+    }
+
+    // 发送消息
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const content = input.value.trim();
+
+        if (!content) {
+            showNotification('请输入消息内容', 'error');
+            return;
+        }
+
+        if (content.length > 1000) {
+            showNotification('消息内容不能超过1000个字符', 'error');
+            return;
+        }
+
+        // 禁用发送按钮防止重复提交
+        const sendButton = document.getElementById('sendButton');
+        sendButton.disabled = true;
+        sendButton.textContent = '发送中...';
+
+        try {
+            const response = await fetch('/api/business/message/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    parameter: {
+                        message_content: content,
+                        customer_id: 1
+                    }
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.code === 200) {
+                // 清空输入框
+                input.value = '';
+
+                // 重新加载消息以显示新发送的消息
+                await loadMessages();
+
+                showNotification('消息发送成功', 'success');
+            } else {
+                showNotification(result.msg || '发送失败', 'error');
+            }
+        } catch (error) {
+            console.error('发送消息失败:', error);
+            showNotification('网络错误，请稍后重试', 'error');
+        } finally {
+            // 恢复发送按钮
+            sendButton.disabled = false;
+            sendButton.textContent = '发送';
+        }
+    }
+
+    // 格式化日期
+    function formatDate(timestamp) {
+        const date = new Date(timestamp * 1000);
+        const now = new Date();
+
+        // 如果是今天，则显示时:分
+        if (date.toDateString() === now.toDateString()) {
+            return date.getHours().toString().padStart(2, '0') + ':' +
+                date.getMinutes().toString().padStart(2, '0');
+        }
+
+        // 否则显示年-月-日 时:分
+        return date.getFullYear() + '-' +
+            (date.getMonth() + 1).toString().padStart(2, '0') + '-' +
+            date.getDate().toString().padStart(2, '0') + ' ' +
+            date.getHours().toString().padStart(2, '0') + ':' +
+            date.getMinutes().toString().padStart(2, '0');
+    }
+
+    // 显示通知
+    function showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.style.display = 'block';
+
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+
+    // 定期检查新消息（每30秒）
+    setInterval(loadMessages, 30000);
+</script>
+</body>
+</html>

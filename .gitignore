@@ -1,0 +1,38 @@
+# ---- 依赖与构建产物：不入库 ----
+node_modules/
+vendor/
+dist/
+unpackage/
+/uni/dist
+/.hbuilderx
+
+# ---- 运行时 ----
+/service/runtime
+/service/build
+runtime/
+*.log
+workerman.log
+
+# ---- 环境与密钥 ----
+.env
+.env.local
+!.env.example
+
+# ---- 上传产物 ----
+/public/uploads
+/public/avatar
+/public/poster
+
+# ---- 编辑器 / 系统 ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+
+# ---- 微信凭据与支付证书：绝不入库 ----
+/service/config/wechat.php
+/service/config/cert/
+*apiclient_key.pem
+*apiclient_cert.pem
